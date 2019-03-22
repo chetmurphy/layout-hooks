@@ -1,0 +1,25 @@
+{
+  "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+  "cSpell.words": [
+    "algos",
+    "carddeck",
+    "chet",
+    "containerleftop",
+    "containerlefttop",
+    "devtool",
+    "dragdrop",
+    "droppable",
+    "inline",
+    "irlg",
+    "irlglayoutprops",
+    "prefixer",
+    "preprocessed",
+    "quadtree",
+    "rbush",
+    "rlg",
+    "style",
+    "types",
+    "unmanaged",
+    "vmin"
+  ],
+}
