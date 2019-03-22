@@ -149,4 +149,30 @@ describe('custom hook tests', () => {
 
     act(() => {block2.result.current.blockRect.left = 1})
   })
+
+  test('Block multiple instances', () => {
+    
+    const block = renderHook(() => Block({width: 100, height: 100}, {location: {left: 0, top: 0, width: 100, height: 100}}))
+
+    expect(block.result.current).toBeTruthy()
+
+    act(() => {block.result.current.rect = {x: 1, y: 1, width: 100, height: 100}})
+    act(() => {block.result.current.blockRect.left = 10})
+    act(() => {block.result.current.blockRect.left = 20})
+    act(() => {block.result.current.rect = {x: 5, y: 1, width: 100, height: 100}})
+   
+    // expect(block.result.current.rect).toEqual({x: 1, y: 1, width: 100, height: 100})
+    expect(block.result.current.rect.x).toEqual(5)
+    expect(block.result.current.blockRect.left).toEqual(5)
+
+    const block2 = renderHook(() => Block({width: 100, height: 100}, {location: {left: 0, top: 0, width: 100, height: 100}}))
+
+    expect(block2.result.current).toBeTruthy()
+
+    act(() => {block2.result.current.rect = {x: 1, y: 1, width: 100, height: 100}})
+
+    act(() => {block2.result.current.blockRect.left = 1})
+
+    act(() => {block.result.current.rect = {x: 5, y: 1, width: 100, height: 100}})
+  })
 })
