@@ -4,13 +4,13 @@
 
 This project is a rewrite of [react-layout-generators](https://github.com/chetmurphy/react-layout-generator) using React Hooks. It is not yet functional but a work in progress.
 
-The first question I faced was how can I convert a complex class based component to use Hooks? Is it all or nothing? The approach outlined below looks promising. It should allow one class at a time to converted and then integrated at least at the syntax level (there will likely be behavior difference that will need to be address).
+The first question I faced was how can I convert a complex class based component to use Hooks? Is it all or nothing? The approach outlined below looks promising. It should allow one class at a time to be converted and then integrated at least at the syntax level (there will likely be behavior difference that will need to be addressed).
 
 I also expect that refactoring options will become clear by doing this conversion so it will likely not be a one for one conversion.
 
 ## Using Functional Component Class Hook Factories
 
-At first this seemed impossible. Hooks need to be run inside of a React functional component and custom hooks are functions. However, what if we returned a class interface from our custom hook? It appears that this does work.
+At first this seemed impossible. Hooks need to be run inside of a React functional component and cannot be used in class (React or otherwise). However, what if we returned a class interface from our custom hook? Here is my first attempt that seems to work:
 
 ```ts
   export function Block(containersize: ISize, data: IDataLayout): IBlockDispatch {
@@ -46,9 +46,9 @@ At first this seemed impossible. Hooks need to be run inside of a React function
   }
 ```
 
-Now when you call Block(...) it will return a class instance bound to the custom hook. The instance is independent of other instance and it can be used like other classes.
+Now when you call Block(...) it will return a class instance bound to variables from React and custom hooks. The instance is independent of other instance and it can be used like other classes.
 
-Note 1. The bound class cannot directly access any hooks. It can however access variables returned by hooks such as the rect and setRect.
+Note 1. The bound class cannot directly access any hooks. It can however access variables returned by hooks such as rect and setRect.
 
 Note 2. Typescript will complain about returning an anonymous class unless the return value of the function is typed. Thus the IBlockDispatch interface.
 
@@ -56,13 +56,14 @@ To test, clone this repository, run 'yarn' and then run 'yarn test'. Currently o
 
 ## Handling symbiotic relationships between variables using hooks
 
-One of the interesting features of the Block class is that it allows users to set a block's position and size using two different data structures that can be mapped from one to the other. 
+One of the interesting features of the Block class is that it allows users to set a block's position and size using two different data structures that can be mapped from one to the other.
 
-The first structure, called a blockRect, is a css like specification of the position and size of a block using combinations of the variables {left, top, right, bottom, width, hight}. For example {width:'10', height: 10 } will define a position of {x: 0, y: 0, width: 10, height: 10} and {bottom: 10, top: 10} will define a position of {x: 0, y:10, width: 100, height: 80} if the block's parent size is {width: 100, height: 100}.
+The first structure, called a blockRect, is a [css](https://www.w3.org/TR/css-position-3/#size-and-position-details)
+ like specification of the position and size of a block using combinations of the variables {left, top, right, bottom, width, hight}. For example {width:'10', height: 10 } will define a position of {x: 0, y: 0, width: 10, height: 10} and {bottom: 10, top: 10} will define a position of {x: 0, y:10, width: 100, height: 80} if the block's parent size is {width: 100, height: 100}.
 
 The second structure, called a rect, is of the form {x, y, width, height}.
 
-This allow a user to position the block using either structure. For example, dragging a block with a mouse could use the rect interface while positioning for a layout could use the blockRect. 
+This allow a user to position the block using either structure. For example, dragging a block with a mouse could use the rect interface while positioning for a layout could use the blockRect.
 
 To make this work the two structures need to be kept in sync. So how can we do this using hooks? One solution is to use the useEffect hook with internals guarded. This results in a definition of Block that looks like this:
 
