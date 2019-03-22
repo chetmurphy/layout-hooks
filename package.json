@@ -1,0 +1,220 @@
+{
+  "name": "layout-hooks",
+  "version": "0.1.0",
+  "description": "A layout hooks for React",
+  "keywords": [
+    "react",
+    "reactjs",
+    "layout",
+    "animation",
+    "editor",
+    "dashboard",
+    "games",
+    "topdown",
+    "design",
+    "typescript",
+    "javascript",
+    "react-component",
+    "svg"
+  ],
+  "main": "dist/layout-hooks.umd.js",
+  "module": "dist/layout-hooks.es5.js",
+  "typings": "dist/types/layout-hooks.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "Chet Murphy <rlg@neq1.io>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chetmurphy/layout-hooks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chetmurphy/layout-hooks/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "build": "tsc --module commonjs && rollup -c rollup.config.ts",
+    "docs": "typedoc --out docs --readme src/includes/intro.md --target es6 --excludePrivate --theme default --exclude '**/*.test.tsx?' --mode file src",
+    "start": "rollup -c rollup.config.ts -w",
+    "storybook": "start-storybook -p 6006",
+    "test": "jest",
+    "covtest": "jest --coverage",
+    "test:coverage": "npm test -- --coverage",
+    "test:badges": "npm run test:coverage  && jest-coverage-badges",
+    "publish": "npm publish",
+    "test:watch": "jest --coverage --watch",
+    "test:prod": "npm run lint && npm run test -- --no-cache",
+    "deploy-docs": "ts-node tools/gh-pages-publish",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "commit": "git-cz",
+    "semantic-release": "semantic-release",
+    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
+    "precommit": "lint-staged",
+    "travis-deploy-once": "travis-deploy-once",
+    "build-storybook": "build-storybook"
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    }
+  },
+  "jest": {
+    "verbose": true,
+    "setupFiles": [
+      "<rootDir>/testSetup.js"
+    ],
+    "transform": {
+      ".(ts|tsx)$": "ts-jest",
+      ".(css)$": "<rootDir>/node_modules/jest-css-modules-transform"
+    },
+    "moduleNameMapper": {
+      "\\.(css)$": "<rootDir>/src/assets/css/__mocks__/styleMock.js"
+    },
+    "testEnvironment": "node",
+    "testURL": "http://localhost/",
+    "testRegex": "(src/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/",
+      ".rpt2_cache",
+      "/src/react-layout-generator.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    },
+    "modulePathIgnorePatterns": [
+      "dist"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts|tsx}"
+    ],
+    "globals": {
+      "window": true
+    },
+    "coverageReporters": [
+      "json-summary",
+      "text",
+      "lcov"
+    ]
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "dependencies": {
+    "colors": "^1.3.2",
+    "debug": "^4.1.1",
+    "deep-equal": "^1.0.1",
+    "global": "^4.3.2",
+    "npx": "^10.2.0",
+    "performance-now": "^2.1.0",
+    "raf": "^3.4.1",
+    "react-hooks-testing-library": "^0.3.7",
+    "react-prefixer": "^2.0.1",
+    "react-resize-detector": "^3.4.0",
+    "rollup-plugin-node-builtins": "^2.1.2"
+  },
+  "peerDependencies": {
+    "react": "^16.0.0",
+    "react-dom": "^16.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@commitlint/cli": "^7.1.2",
+    "@commitlint/config-conventional": "^7.1.2",
+    "@storybook/addon-actions": "^5.0.1",
+    "@storybook/addon-console": "^1.1.0",
+    "@storybook/addon-info": "^5.0.1",
+    "@storybook/addon-knobs": "^5.0.1",
+    "@storybook/addon-links": "^5.0.1",
+    "@storybook/addon-notes": "^5.0.1",
+    "@storybook/addons": "^5.0.1",
+    "@storybook/react": "^5.0.1",
+    "@types/debug": "^4.1.2",
+    "@types/enzyme": "^3.1.15",
+    "@types/enzyme-adapter-react-16": "^1.0.3",
+    "@types/jest": "^23.3.2",
+    "@types/jsdom": "^12.2.1",
+    "@types/node": "^10.11.0",
+    "@types/prop-types": "^15.7.0",
+    "@types/raf": "^3.4.0",
+    "@types/react-dom": "^16.8.2",
+    "@types/react-resize-detector": "^3.1.0",
+    "@types/storybook-addon-jsx": "^5.4.2",
+    "@types/storybook__react": "^4.0.1",
+    "@types/underscore": "^1.8.9",
+    "add": "^2.0.6",
+    "awesome-typescript-loader": "^5.2.1",
+    "babel-loader": "^8.0.5",
+    "commitizen": "^3.0.0",
+    "coveralls": "^3.0.2",
+    "cross-env": "^5.2.0",
+    "cz-conventional-changelog": "^2.1.0",
+    "enzyme": "^3.8.0",
+    "enzyme-adapter-react-16": "^1.7.1",
+    "husky": "^1.0.1",
+    "jest": "^23.6.0",
+    "jest-config": "^23.6.0",
+    "jest-css-modules-transform": "^2.1.1",
+    "jsdom": "^13.1.0",
+    "lint-staged": "^8.0.0",
+    "lodash.camelcase": "^4.3.0",
+    "mock-local-storage": "^1.1.8",
+    "prettier": "^1.14.3",
+    "prompt": "^1.0.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.8.4",
+    "react-docgen-typescript-webpack-plugin": "^1.1.0",
+    "react-dom": "^16.8.4",
+    "react-testing-library": "^6.0.1",
+    "replace-in-file": "^3.4.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.67.0",
+    "rollup-plugin-commonjs": "^9.1.8",
+    "rollup-plugin-json": "^3.1.0",
+    "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-postcss": "^1.6.3",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-typescript2": "^0.18.0",
+    "semantic-release": "^15.9.16",
+    "storybook": "^1.0.0",
+    "storybook-addon-jsx": "^6.0.0",
+    "travis-deploy-once": "^5.0.9",
+    "ts-jest": "^23.10.2",
+    "ts-node": "^7.0.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "tslint-config-standard": "^8.0.1",
+    "typedoc": "^0.12.0",
+    "typedoc-plugin-no-inherit": "^1.1.1",
+    "typescript": "^3.3.3",
+    "underscore": "^1.9.1",
+    "yarn": "^1.13.0"
+  }
+}
