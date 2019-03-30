@@ -22,14 +22,16 @@ export class Stacking {
     let currentFront = Number.MAX_SAFE_INTEGER
     let max = Number.MIN_SAFE_INTEGER
 
-    block.generator.blocks().map.forEach((block: React.MutableRefObject<Block>) => {
-      if (block.current.zIndex > current) {
-        currentFront = block.current.zIndex
-      }
-      if (block.current.zIndex > max) {
-        max = block.current.zIndex
-      }
-    })
+    block.generator
+      .blocks()
+      .map.forEach((block: React.MutableRefObject<Block>) => {
+        if (block.current.zIndex > current) {
+          currentFront = block.current.zIndex
+        }
+        if (block.current.zIndex > max) {
+          max = block.current.zIndex
+        }
+      })
 
     const value =
       currentFront < Number.MAX_SAFE_INTEGER
@@ -44,7 +46,9 @@ export class Stacking {
     return value
   }
 
-  public bringFront(blocks: React.MutableRefObject<Block> | React.MutableRefObject<Block>[]) {
+  public bringFront(
+    blocks: React.MutableRefObject<Block> | React.MutableRefObject<Block>[]
+  ) {
     const { max } = this.minMax()
     if (Array.isArray(blocks)) {
       blocks.forEach((block: React.MutableRefObject<Block>) => {
@@ -60,14 +64,16 @@ export class Stacking {
     let currentBack = Number.MIN_SAFE_INTEGER
     let min = Number.MAX_SAFE_INTEGER
 
-    block.generator.blocks().map.forEach((block: React.MutableRefObject<Block>) => {
-      if (block.current.zIndex < current) {
-        currentBack = block.current.zIndex
-      }
-      if (block.current.zIndex < min) {
-        min = block.current.zIndex
-      }
-    })
+    block.generator
+      .blocks()
+      .map.forEach((block: React.MutableRefObject<Block>) => {
+        if (block.current.zIndex < current) {
+          currentBack = block.current.zIndex
+        }
+        if (block.current.zIndex < min) {
+          min = block.current.zIndex
+        }
+      })
 
     const value =
       currentBack > Number.MIN_SAFE_INTEGER
@@ -82,7 +88,9 @@ export class Stacking {
     return value
   }
 
-  public sendBack(blocks: React.MutableRefObject<Block> | React.MutableRefObject<Block>[]) {
+  public sendBack(
+    blocks: React.MutableRefObject<Block> | React.MutableRefObject<Block>[]
+  ) {
     const { min } = this.minMax()
     if (Array.isArray(blocks)) {
       blocks.forEach((block: React.MutableRefObject<Block>) => {
