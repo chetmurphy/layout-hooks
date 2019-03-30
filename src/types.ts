@@ -1,5 +1,6 @@
 import { IGenerator } from 'generators/Generator'
 import { ParamValue } from 'components/Params'
+import { Block } from 'components/Block'
 
 export interface IGenericProps {
   [key: string]: any
@@ -125,6 +126,15 @@ export interface ILayoutProps extends React.HTMLProps<HTMLElement> {
   layers?: ILayerOptions
 
   onUpdate?: () => void
+}
+
+export interface ILayoutState {
+  width: number
+  height: number
+  update: number
+  contextMenu: React.MutableRefObject<Block> | undefined
+  contextMenuActive: boolean
+  devicePixelRatio: number
 }
 
 /**

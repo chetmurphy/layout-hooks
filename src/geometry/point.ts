@@ -1,9 +1,9 @@
 import { Unit, IPoint } from '../types'
 import {
-  toUnit,
-  parseUnitValue,
   toXPixel,
-  toYPixel
+  toYPixel,
+  parseUnitValue,
+  toUnit
 } from '../components/blockUtils'
 import { IGenerator } from '../generators/Generator'
 
@@ -71,7 +71,9 @@ export function createExPoint(g: IGenerator) {
       if (typeof v === 'string') {
         const unit = toUnit(v)
         this._x = parseUnitValue(v, unit)
-        this._xUnit = unit
+        if (unit) {
+          this._xUnit = unit
+        }
       } else {
         this._x = v
       }
@@ -81,7 +83,9 @@ export function createExPoint(g: IGenerator) {
       if (typeof v === 'string') {
         const unit = toUnit(v)
         this._y = parseUnitValue(v, unit)
-        this._yUnit = unit
+        if (unit) {
+          this._yUnit = unit
+        }
       } else {
         this._y = v
       }

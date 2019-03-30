@@ -55,6 +55,10 @@ export default {
           'createContext',
           'isValidElement',
           'isValidElementType',
+          'useState',
+          'useRef',
+          'useEffect',
+          'useMemo'
         ],
         'node_modules/react-dom/index.js': [
           'render',

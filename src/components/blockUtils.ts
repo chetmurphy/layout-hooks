@@ -171,9 +171,9 @@ export function convertExRect(arg: IExRect): IBlockRect {
   return internal
 }
 
-export function parseUnitValue(v: string, unit: Unit) {
+export function parseUnitValue(v: string, unit: Unit | undefined) {
   let value = parseFloat(v)
-  if (unit === Unit.pixel || unit === Unit.unmanaged) {
+  if (unit === undefined || unit === Unit.pixel || unit === Unit.unmanaged) {
     return value
   }
   return value * 0.01

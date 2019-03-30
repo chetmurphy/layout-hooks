@@ -30,9 +30,8 @@ export interface IDataLayout {
   /**
    * The name of the block. It must be unique within each Layout. Failure
    * to be unique will result in children of Layout overwriting each other.
-   * Temporary blocks can be created without a name.
    */
-  name?: string
+  name: string
 
   /**
    * Specifies the location of this block. Location is position of the block

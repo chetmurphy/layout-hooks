@@ -75,6 +75,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         }
       // }
       p = {
+        name: 'footer', 
         editor: {
           edits: [
             {
@@ -86,7 +87,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         },
         location: location
       }
-      blocks.set('footer', p, g)
+      blocks.set(p, g)
     }
 
     function content() {
@@ -98,9 +99,10 @@ export function desktopGenerator(name: string, exParams?: Params) {
       }
 
       p = {
+        name: 'content', 
         location
       }
-      blocks.set('content', p, g)
+      blocks.set(p, g)
     }
 
     function header() {
@@ -120,6 +122,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         }
       }
       p = {
+        name: 'header', 
         editor: {
           edits: [
             {
@@ -131,7 +134,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         },
         location
       }
-      blocks.set('header', p, g)
+      blocks.set(p, g)
     }
 
     // function contentHeader() {
@@ -178,6 +181,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         }
       }
       p = {
+        name: 'rightSide',
         editor: {
           edits: [
             {
@@ -189,7 +193,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         },
         location
       }
-      blocks.set('rightSide', p, g)
+      blocks.set(p, g)
     }
 
     function leftSide() {
@@ -210,6 +214,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         }
       }
       p = {
+        name: 'leftSide',
         editor: {
           edits: [
             {
@@ -221,7 +226,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         },
         location
       }
-      blocks.set('leftSide', p, g)
+      blocks.set(p, g)
     }
 
     function title() {
@@ -232,6 +237,7 @@ export function desktopGenerator(name: string, exParams?: Params) {
         height: titleHeight
       }
       p = {
+        name: 'title', 
         editor: {
           edits: [
             {
@@ -243,13 +249,12 @@ export function desktopGenerator(name: string, exParams?: Params) {
         },
         location
       }
-      blocks.set('title', p, g)
+      blocks.set(p, g)
     }
   }
 
-  function create(args: ICreate): Block {
-
-    return args.g.blocks().set(args.name, args.dataLayout, args.g)
+  function create(args: ICreate): React.MutableRefObject<Block> {
+    return args.g.blocks().set(args.dataLayout, args.g)
   }
 
   return new Generator(name, init, _params, create)

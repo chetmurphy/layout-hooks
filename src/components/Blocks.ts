@@ -1,5 +1,5 @@
 import { IGenerator } from '../generators/Generator'
-import { IBlock } from './Block'
+import { Block, BlockFactory } from './Block'
 import { IDataLayout } from '../components/blockTypes'
 
 /**
@@ -7,10 +7,10 @@ import { IDataLayout } from '../components/blockTypes'
  */
 
 export class Blocks {
-  private _blocks: Map<string, IBlock>
-  private _byIndex: IBlock[]
+  private _blocks: Map<string, React.MutableRefObject<Block>>
+  private _byIndex: React.MutableRefObject<Block>[]
 
-  constructor(blocks: Array<[string, IBlock]>) {
+  constructor(blocks: Array<[string, React.MutableRefObject<Block>]>) {
     this._byIndex = new Array()
     this._blocks = new Map(blocks)
     this._blocks.forEach(value => {
@@ -23,10 +23,10 @@ export class Blocks {
    * specified layer. If there is no layer for a Block it is treated
    * as having layer 0.
    */
-  public layers(layer: number): IBlock[] {
-    const blocks: IBlock[] = []
+  public layers(layer: number): React.MutableRefObject<Block>[] {
+    const blocks: React.MutableRefObject<Block>[] = []
     this._blocks.forEach(block => {
-      const blockLayer = block.layer
+      const blockLayer = block.current.layer
       if (blockLayer) {
         if (layer === blockLayer) {
           blocks.push(block)
@@ -70,13 +70,13 @@ export class Blocks {
   /**
    * Set will create block if it does not exist otherwise it will just update the block.
    */
-  public set(key: string, p: IDataLayout, g: IGenerator): IBlock {
-    let block = this._blocks.get(key)
+  public set(p: IDataLayout, g: IGenerator): React.MutableRefObject<Block> {
+    let block = this._blocks.get(p.name)
     if (block) {
-      block.updatePosition(p)
+      block.current.updatePosition(p)
     } else {
-      block = new IBlock(key, p, g)
-      this._blocks.set(key, block)
+      block = BlockFactory(p, g)
+      this._blocks.set(p.name, block)
       if (this._blocks.size > this._byIndex.length) {
         // Add to byIndex array
         this._byIndex.push(block)

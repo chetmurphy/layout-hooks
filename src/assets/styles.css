@@ -1,0 +1,52 @@
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: inline-block;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: 'hidden';
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: inherit;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 5px 5px;
+  text-decoration: none;
+  display: block;
+  z-index: inherit;
+}
+
+.dropdown a:hover {
+  background-color: #ddd;
+}
+
+.disabled {
+  padding: 5px 5px;
+  color: 'black';
+  cursor: none;
+  opacity: 0.5;
+  text-decoration: none;
+}
+
+.disabled > a div {
+  padding: 5px 5px;
+  color: 'black';
+  display: inline-block;
+  /* For IE11/ MS Edge bug */
+  pointer-events: none;
+  text-decoration: none;
+}
+
+.separator {
+  height: 0.5px;
+  margin: 5px 0;
+  overflow: hidden;
+  padding: 0;
+  line-height: 0;
+  opacity: 0.5;
+}

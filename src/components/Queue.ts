@@ -1,6 +1,6 @@
 import { Block } from './Block'
 
-export class Queue<T extends Block> {
+export class Queue<T extends React.MutableRefObject<Block>> {
   private _data: T[] = []
   private _name: string
 

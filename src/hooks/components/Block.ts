@@ -8,7 +8,7 @@ import { Generator, IGenerator } from '../../generators/Generator'
 import { Params } from '../../components/Params'
 import { Blocks } from '../../components/Blocks'
 
-import { useBounds } from '../../components/useBounds'
+import { useBounds } from './useBounds'
 
 const exRectInitialState: IExRect = {
   left: undefined,

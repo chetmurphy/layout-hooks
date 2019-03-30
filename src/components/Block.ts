@@ -1,236 +1,262 @@
 import * as React from 'react'
 
-import { IDataLayout, IBlockRect } from './blockTypes'
-import { useBounds } from './useBounds'
-import { convertExRect, layout, inverseLayout } from './blockUtils'
-import { IRect, ISize, Unit } from '../types'
+import {
+  IDataLayout,
+  IBlockRect,
+  PositionChildrenFn,
+  IAlign
+} from './blockTypes'
+import {
+  convertExRect,
+  layout,
+  toOrigin,
+  toAlign,
+  fromAlign
+} from './blockUtils'
+import { IRect } from '../types'
+import { IGenerator } from 'generators/Generator'
 
 const deepEqual = require('deep-equal')
 
-type BlockRectAction =
-  | 'setLeft'
-  | 'setRight'
-  | 'setTop'
-  | 'setBottom'
-  | 'setWidth'
-  | 'setHeight'
-  | 'setAll'
-
-interface IBlockRectAction {
-  type: BlockRectAction
-  value: number
-  unit?: Unit
-  all?: IBlockRect
-}
-
-const BlockRectReducer: React.Reducer<IBlockRect, IBlockRectAction> = (
-  state: IBlockRect,
-  action: IBlockRectAction
-) => {
-  switch (action.type) {
-    case 'setLeft':
-      if (action.unit) {
-        return { ...state, left: action.value, leftUnit: action.unit }
-      }
-      return { ...state, left: action.value }
-    case 'setRight':
-      if (action.unit) {
-        return { ...state, right: action.value, rightUnit: action.unit }
-      }
-      return { ...state, right: action.value }
-    case 'setTop':
-      if (action.unit) {
-        return { ...state, top: action.value, topUnit: action.unit }
-      }
-      return { ...state, top: action.value }
-    case 'setBottom':
-      if (action.unit) {
-        return { ...state, bottom: action.value, bottomUnit: action.unit }
-      }
-      return { ...state, bottom: action.value }
-    case 'setWidth':
-      if (action.unit) {
-        return { ...state, width: action.value, widthUnit: action.unit }
-      }
-      return { ...state, width: action.value }
-    case 'setHeight':
-      if (action.unit) {
-        return { ...state, height: action.value, heightUnit: action.unit }
-      }
-      return { ...state, height: action.value }
-    case 'setAll':
-      if (!action.all) {
-        throw new Error(`Action all not defined for: ${action.type}`)
-      }
-      return action.all ? action.all : state
-    default:
-      throw new Error(`Unexpected unexpected BlockRect action: ${action.type}`)
-  }
-}
-
-export interface IBlockRectDispatch {
+export interface IRectDispatch {
   value: IBlockRect
-  left?: number
-  top?: number
-  right?: number
-  bottom?: number
-  width?: number
-  height?: number
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
-export interface IBlockDispatch {
+export abstract class Block {
+  name: string
   rect: IRect
-  blockRect: IBlockRectDispatch
+  layer: number | undefined
+  zIndex: number
+  hidden: boolean
+  isWidthUnmanaged: boolean
+  isHeightUnmanaged: boolean
+  reactTransform: string
+  reactTransformOrigin: string
+  positionChildren: PositionChildrenFn | undefined
+  generator: IGenerator
+  localParent: React.MutableRefObject<Block> | undefined
+  align: IAlign | undefined
+
+  onClick: (e: React.MouseEvent) => void
+  onMouseDown: (e: React.MouseEvent) => void
+  abstract updatePosition(data: IDataLayout)
+  abstract setData(key: string, v: any)
+  abstract getData(key: string, i: any)
 }
 
-export function Block(containersize: ISize, data: IDataLayout): IBlockDispatch {
-  const bounds = useBounds(containersize)
+/**
+ * Factory to create a Block in the form of a reference (React.MutableRefObject<Block>).
+ * @param data
+ * [Options](../interfaces/idatalayout.html) for a blocks behavior. Note that a block can be
+ * defined in a generator function and then referenced by name in JSX. The same
+ * [data-layout](../interfaces/idatalayout.html) property is used in both places. If it is
+ * defined in a generator then only the name will be used in JSX. The other properties of
+ * data-layout will not be used.
+ * @param g
+ * The [generator](../classes/generator.html) for this Layout.
+ */
+export function BlockFactory(
+  data: IDataLayout,
+  g: IGenerator
+): React.MutableRefObject<Block> {
+  // console.log(`BlockFactory enter ${data.name}`)
 
-  const inputBlockRect = React.useMemo(() => {
-    return convertExRect(data.location)
-  }, [data])
-
-  const [blockRect, setBlockRect] = React.useReducer(
-    BlockRectReducer,
-    inputBlockRect
-  )
-
-  // Initial state must be consistent with data.location for correct updates
-  const [rect, setRect] = React.useState<IRect>(layout(blockRect, bounds))
-
-  const [changeBlockRect, setChangeBlockRect] = React.useState(0)
-  const [changeRect, setChangeRect] = React.useState(0)
-
-  // Update if needed
-  React.useEffect(() => {
-    if (changeBlockRect) {
-      const r = layout(blockRect, bounds)
-      if (!deepEqual(r, rect)) {
-        setRect(r)
-      }
-      setChangeBlockRect(0)
-    }
-
-    if (changeRect) {
-      const br = inverseLayout(rect, blockRect, bounds)
-      if (!deepEqual(br, blockRect)) {
-        setBlockRect({ type: 'setAll', value: 0, all: br })
-      }
-      setChangeRect(0)
-    }
-  }, [bounds, rect, blockRect])
-
-  class BlockRectDispatch implements IBlockRectDispatch {
-    get value() {
-      return blockRect
-    }
-    set value(v: IBlockRect) {
-      setBlockRect({ type: 'setAll', value: 0, all: blockRect })
-      setChangeBlockRect(1)
-    }
-
-    get left() {
-      return blockRect.left
-    }
-    set left(v: number | undefined) {
-      if (v) {
-        setBlockRect({ type: 'setLeft', value: v })
+  function getRef() {
+    let ref
+    if (data.align) {
+      if (typeof data.align.key === 'string') {
+        ref = g.lookup(data.align.key as string)
       } else {
-        // remove
-        const { left, leftUnit, ...noLeft } = blockRect
-        setBlockRect({ type: 'setAll', value: 0, all: noLeft })
+        const blocks = g.blocks()
+        if (blocks) {
+          ref = blocks.find(data.align.key as number)
+        }
       }
-      setChangeBlockRect(1)
     }
-
-    get top() {
-      return blockRect.top
-    }
-    set top(v: number | undefined) {
-      if (v) {
-        setBlockRect({ type: 'setTop', value: v })
-      } else {
-        // remove
-        const { top, topUnit, ...noTop } = blockRect
-        setBlockRect({ type: 'setAll', value: 0, all: noTop })
-      }
-      setChangeBlockRect(1)
-    }
-
-    get right() {
-      return blockRect.right
-    }
-    set right(v: number | undefined) {
-      if (v) {
-        setBlockRect({ type: 'setRight', value: v })
-      } else {
-        // remove
-        const { right, rightUnit, ...noRight } = blockRect
-        setBlockRect({ type: 'setAll', value: 0, all: noRight })
-      }
-      setChangeBlockRect(1)
-    }
-
-    get bottom() {
-      return blockRect.right
-    }
-    set bottom(v: number | undefined) {
-      if (v) {
-        setBlockRect({ type: 'setBottom', value: v })
-      } else {
-        // remove
-        const { bottom, bottomUnit, ...noBottom } = blockRect
-        setBlockRect({ type: 'setAll', value: 0, all: noBottom })
-      }
-      setChangeBlockRect(1)
-    }
-
-    get width() {
-      return blockRect.right
-    }
-    set width(v: number | undefined) {
-      if (v) {
-        setBlockRect({ type: 'setWidth', value: v })
-      } else {
-        // remove
-        const { width, widthUnit, ...noWidth } = blockRect
-        setBlockRect({ type: 'setAll', value: 0, all: noWidth })
-      }
-      setChangeBlockRect(1)
-    }
-
-    get height() {
-      return blockRect.right
-    }
-    set height(v: number | undefined) {
-      if (v) {
-        setBlockRect({ type: 'setHeight', value: v })
-      } else {
-        // remove
-        const { height, heightUnit, ...noHeight } = blockRect
-        setBlockRect({ type: 'setAll', value: 0, all: noHeight })
-      }
-      setChangeBlockRect(1)
-    }
+    return ref
   }
 
-  const blockRectDispatch = new BlockRectDispatch()
+  const bounds = { container: g.containersize(), viewport: g.viewport() }
+
+  const blockRect = React.useMemo(() => {
+    return convertExRect(data.location)
+  }, [data.location])
+
+  const [rect, setRect] = React.useState({ x: 0, y: 0, width: 0, height: 0 })
+
+  type MouseEventHandler = (e: React.MouseEvent<Element, MouseEvent>) => void //((e: MouseEvent) => void) | undefined
+  const _layer = React.useRef<number>()
+  const _zIndex = React.useRef<number>(0)
+  const _hidden = React.useRef<boolean>(false)
+  const _isWidthUnmanaged = React.useRef<boolean>(false)
+  const _isHeightUnmanaged = React.useRef<boolean>(false)
+  const _onClick = React.useRef<MouseEventHandler>(noop)
+  const _onMouseDown = React.useRef<MouseEventHandler>(noop)
+
+  let _localParent = React.useRef<React.MutableRefObject<Block> | undefined>()
+
+  const _reactTransform = React.useRef<string>('')
+  const _reactTransformOrigin = React.useRef<string>('')
+
+  const _data = React.useRef<Map<string, any>>(new Map())
+
+  function noop(e: React.MouseEvent<Element, MouseEvent>) {}
+
+  React.useEffect(() => {
+    let r = layout(blockRect, bounds)
+
+    if (data.align) {
+      const ref = getRef()
+      if (ref) {
+        let source = toAlign(ref.rect, data.align.source)
+
+        // Translate to self location
+        source.x += data.align.offset.x
+        source.y += data.align.offset.y
+
+        // Get left top point
+        const self = fromAlign(
+          { ...source, width: r.width, height: r.height },
+          data.align.self
+        )
+
+        r = {
+          ...self,
+          width: r.width,
+          height: r.height
+        }
+      } else {
+        throw new Error(
+          `Layout align key ${data.align.key} not found for block ${data.name}`
+        )
+      }
+    } else {
+      if (data.origin) {
+        r = toOrigin(r, data.origin)
+      }
+    }
+
+    if (!deepEqual(r, rect)) {
+      setRect(r)
+    }
+  }, [
+    data.location,
+    data.align,
+    data.origin,
+    bounds.container.width,
+    bounds.container.height,
+    bounds.viewport.width,
+    bounds.viewport.height,
+    g
+  ])
 
   // Class closure for Block interface
-  class Block implements IBlockDispatch {
+  class BlockImplementation extends Block {
+    get name() {
+      return data.name
+    }
+
     get rect() {
       return rect
     }
 
     set rect(r: IRect) {
       setRect(r)
-      setChangeRect(1)
     }
 
-    get blockRect(): IBlockRectDispatch {
-      return blockRectDispatch
+    get layer(): number | undefined {
+      return _layer.current
     }
+
+    set layer(l: number | undefined) {
+      _layer.current = l
+    }
+
+    get localParent(): React.MutableRefObject<Block> | undefined {
+      return _localParent.current
+    }
+
+    set localParent(b: React.MutableRefObject<Block> | undefined) {
+      _localParent.current = b
+    }
+
+    get reactTransform() {
+      return _reactTransform.current
+    }
+
+    get reactTransformOrigin() {
+      return _reactTransformOrigin.current
+    }
+
+    get zIndex(): number {
+      return _zIndex.current
+    }
+
+    set zIndex(v: number) {
+      _zIndex.current = v
+    }
+
+    get align(): IAlign | undefined {
+      return data.align
+    }
+
+    get hidden(): boolean {
+      return _hidden.current
+    }
+
+    set hidden(v: boolean) {
+      _hidden.current = v
+    }
+
+    get isWidthUnmanaged(): boolean {
+      return _isWidthUnmanaged.current
+    }
+
+    get isHeightUnmanaged(): boolean {
+      return _isHeightUnmanaged.current
+    }
+
+    get onClick() {
+      return _onClick.current
+    }
+
+    set onClick(fn: MouseEventHandler) {
+      _onClick.current = fn
+    }
+
+    get onMouseDown() {
+      return _onMouseDown.current
+    }
+
+    set onMouseDown(fn: MouseEventHandler) {
+      _onMouseDown.current = fn
+    }
+
+    get positionChildren(): PositionChildrenFn | undefined {
+      return data.positionChildren
+    }
+
+    get generator() {
+      return g
+    }
+
+    public getData(key: string, i: any) {
+      const v = _data.current.get(key)
+      return v ? v : i
+    }
+
+    public setData(key: string, v: any) {
+      return _data.current.set(key, v)
+    }
+
+    public updatePosition(data: IDataLayout) {}
   }
 
-  return new Block()
+  const blockRef = React.useRef<Block>(new BlockImplementation())
+  blockRef.current = new BlockImplementation()
+  return blockRef
 }

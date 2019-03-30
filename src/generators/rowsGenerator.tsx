@@ -39,14 +39,14 @@ export function rowsGenerator(args: IGeneratorFunctionArgs) {
     // update
     let currentHeight = margin.top;
     blocks.map.forEach((block) => {
-      const rect = block.rect;
+      const rect = block.current.rect;
       const leftOffset = (containersize.width / 2 - (rect.width + margin.left + margin.right) / 2);
-      block.update({ x: leftOffset, y: currentHeight, ...rectSize(rect)});
+      block.current.rect = { x: leftOffset, y: currentHeight, ...rectSize(rect)};
       currentHeight += rect.height + margin.top + margin.bottom;
     });
   }
 
-  function create(args: ICreate): Block {
+  function create(args: ICreate): React.MutableRefObject<Block>  {
 
     const params = args.g.params();
     const containersize = args.g.containersize()
@@ -64,13 +64,13 @@ export function rowsGenerator(args: IGeneratorFunctionArgs) {
     let topOffset = margin.top;
     if (blocks.map.size) {
       const block = blocks.find(blocks.map.size - 1);
-      const r = block.rect;
+      const r = block.current.rect;
       topOffset = r.y + r.height + margin.bottom + margin.top;
     }
     const leftOffset = (containersize.width / 2) - (size.width + margin.left + margin.right) / 2;
     p.location = { left: leftOffset, top: topOffset, ...size }
 
-    return blocks.set(args.name, p, args.g);
+    return blocks.set(p, args.g);
   }
 
   return new Generator(name, init, _params, create, args.editHelper);

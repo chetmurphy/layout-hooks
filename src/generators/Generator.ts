@@ -6,7 +6,9 @@ import { EditHelper } from '../editors/EditHelper'
 import { Select } from '../editors/Select'
 import { Stacking } from '../components/Stacking'
 import { Hooks } from '../components/Hooks'
-import { ISize, IPoint } from '../types'
+import { ISize, IPoint, DebugLevels } from '../types'
+
+import RLGDebug from 'debug'
 
 export interface IGeneratorFunctionArgs {
   name: string
@@ -31,7 +33,9 @@ export interface ICreate {
   count?: number
 }
 
-export type Create = (args: ICreate) => Block | undefined
+export type Create = (
+  args: ICreate
+) => React.MutableRefObject<Block> | undefined
 
 /**
  * This is the interface for a low level generator. By conforming to it the
@@ -64,7 +68,7 @@ export interface IGenerator {
   /**
    * Returns the named Block or undefined.
    */
-  lookup: (name: string) => Block | undefined
+  lookup: (name: string) => React.MutableRefObject<Block> | undefined
   /**
    * This will remove all Blocks forcing the blocks to be recreated on the next
    * render.
@@ -115,6 +119,8 @@ export interface IGenerator {
    * animate flag. If non zero then animation is active.
    */
   animate: (v?: number) => number
+
+  dump: () => void
 }
 
 export class Generator implements IGenerator {
@@ -179,7 +185,7 @@ export class Generator implements IGenerator {
     return this._select
   }
 
-  public lookup = (name: string): Block | undefined => {
+  public lookup = (name: string): React.MutableRefObject<Block> | undefined => {
     return this._blocks.get(name)
   }
 
@@ -242,7 +248,9 @@ export class Generator implements IGenerator {
     return this._animate
   }
 
-  public create = (args: ICreate): Block | undefined => {
+  public create = (
+    args: ICreate
+  ): React.MutableRefObject<Block> | undefined => {
     if (this._create) {
       return this._create(args)
     }
@@ -260,5 +268,28 @@ export class Generator implements IGenerator {
 
   public addContainerChangeListener(fn: Callback) {
     this._containersizeCallback.push(fn)
+  }
+
+  public dump() {
+    const params = this.params()
+    const containersize = this.containersize()
+    if (containersize.width && containersize.height) {
+      const blocks = this.blocks()
+
+      RLGDebug(DebugLevels.data)(`Generator dump for ${this.name()}`)
+      RLGDebug(DebugLevels.data)('params')
+      params.data.forEach(item => {
+        RLGDebug(DebugLevels.data)(`  ${item[0]} ${JSON.stringify(item[1])}`)
+      })
+      RLGDebug(DebugLevels.data)('blocks (computed position rects)')
+      blocks.map.forEach((value, key) => {
+        const r = value.current.rect
+        RLGDebug(DebugLevels.data)(
+          `name: ${key} x: ${r.x} y: ${r.y} width: ${r.width} height: ${
+            r.height
+          }`
+        )
+      })
+    }
   }
 }

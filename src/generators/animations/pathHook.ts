@@ -86,16 +86,16 @@ export interface IPathHookPoints {
 export interface IPathHook {
   prefix: string
   points: IPathHookPoints[]
-  input: (() => Block[]) | undefined
-  update: Queue<Block>
-  output: Queue<Block>
+  input: (() => React.MutableRefObject<Block>[]) | undefined
+  update: Queue<React.MutableRefObject<Block>>
+  output: Queue<React.MutableRefObject<Block>>
   velocity: number
   spacing: number
   fill?: boolean
   xPositionRef?: PositionRef
   yPositionRef?: PositionRef
-  sprite?: () => Block | undefined
-  onSpriteCollide?: (block: Block) => void
+  sprite?: () => React.MutableRefObject<Block> | undefined
+  onSpriteCollide?: (block: React.MutableRefObject<Block>) => void
   g: IGenerator
 }
 
@@ -137,7 +137,7 @@ export function pathHook(args: IPathHook): fnHook {
   resize(args.g.containersize())
   args.g.addContainerChangeListener(resize)
 
-  let active: Block[] = []
+  let active: React.MutableRefObject<Block>[] = []
 
   // The hook - called at the beginning of each render
   return function hook(g: IGenerator) {
@@ -181,14 +181,13 @@ export function pathHook(args: IPathHook): fnHook {
           const block = input.shift()
           if (block) {
             const p = piecewise.point(offset)
-            const r = block.blockRect
+            const r = block.current.rect
             if (p) {
               positionBlock(r, p, block, containersize)
 
-              block.hidden = false
-              block.touch()
-              block.setData('distance', offset)
-              block.setData('hook', args.prefix)
+              block.current.hidden = false
+              block.current.setData('distance', offset)
+              block.current.setData('hook', args.prefix)
               active.unshift(block)
             }
           }
@@ -197,7 +196,7 @@ export function pathHook(args: IPathHook): fnHook {
         }
 
         input.forEach(block => {
-          block.hidden = true
+          block.current.hidden = true
         })
       }
 
@@ -222,12 +221,12 @@ export function pathHook(args: IPathHook): fnHook {
       // 3) update list
 
       // Temporary list for updating active
-      const updateActive: Block[] = []
+      const updateActive: React.MutableRefObject<Block>[] = []
 
       const first = active[0]
       if (first) {
         // Keep path full
-        const d = first.getData('distance', 0) as number
+        const d = first.current.getData('distance', 0) as number
 
         if (d + deltaTime * args.velocity > args.spacing) {
           // Add update
@@ -256,7 +255,7 @@ export function pathHook(args: IPathHook): fnHook {
   function positionBlock(
     r: IBlockRect,
     p: IPoint,
-    block: Block,
+    block: React.MutableRefObject<Block>,
     containersize: ISize
   ) {
     if (args.xPositionRef === undefined && r.left !== undefined) {
@@ -273,7 +272,7 @@ export function pathHook(args: IPathHook): fnHook {
     } else {
       throw new Error(
         `PathHook cannot update left or right for block '${
-          block.name
+          block.current.name
         }' position`
       )
     }
@@ -292,7 +291,7 @@ export function pathHook(args: IPathHook): fnHook {
     } else {
       throw new Error(
         `PathHook cannot update top or bottom for block '${
-          block.name
+          block.current.name
         }' position`
       )
     }
@@ -306,15 +305,18 @@ export function pathHook(args: IPathHook): fnHook {
     }
   }
 
-  function collision(sprite: Block, block: Block) {
-    const br = block.rect
+  function collision(
+    sprite: React.MutableRefObject<Block>,
+    block: React.MutableRefObject<Block>
+  ) {
+    const br = block.current.rect
     // console.log(`block ${br.x} ${br.y} ${br.width} ${br.height}`)
     var l1 = br.x
     var t1 = br.y
     var r1 = br.x + br.width
     var b1 = br.y + br.height
 
-    const sr = sprite.rect
+    const sr = sprite.current.rect
     // console.log(`sprite ${sr.x} ${sr.y} ${sr.width} ${sr.height}`)
     var l2 = sr.x
     var t2 = sr.y
@@ -329,44 +331,45 @@ export function pathHook(args: IPathHook): fnHook {
     return true
   }
 
-  function increment(block: Block, deltaTime: number, updateActive: Block[]) {
-    const r = block.blockRect
-    const d = block.getData('distance', 0) as number
+  function increment(
+    block: React.MutableRefObject<Block>,
+    deltaTime: number,
+    updateActive: React.MutableRefObject<Block>[]
+  ) {
+    const r = block.current.rect //blockRect
+    const d = block.current.getData('distance', 0) as number
     const dv = d + deltaTime * args.velocity
-    block.setData('distance', dv)
-    block.setData('hook', args.prefix)
+    block.current.setData('distance', dv)
+    block.current.setData('hook', args.prefix)
     const p = piecewise.point(dv)
     if (p) {
       // Point exists on piecewise
       positionBlock(r, p, block, args.g.containersize())
-      // r.left = p.x
-      // r.top = p.y
-      block.touch()
       // Keep this block
       updateActive.push(block)
     } else {
       // Put on output - block finished
-      const r = block.blockRect
+      const r = block.current.rect //blockRect
       positionBlock(r, { x: 0, y: 0 }, block, args.g.containersize())
-      block.touch()
-      block.setData('distance', 0)
-      block.hidden = true
+      // block.touch()
+      block.current.setData('distance', 0)
+      block.current.hidden = true
       args.output.enqueue(block)
       // args.output.dump('output')
     }
   }
 
-  function activate(b: Block) {
-    const r = b.blockRect
-    b.hidden = false
-    b.setData('distance', 0)
-    b.setData('hook', args.prefix)
+  function activate(b: React.MutableRefObject<Block>) {
+    const r = b.current.rect //blockRect
+    b.current.hidden = false
+    b.current.setData('distance', 0)
+    b.current.setData('hook', args.prefix)
     const p = piecewise.point(0)
 
     if (p) {
       // Point exists on piecewise
       positionBlock(r, p, b, args.g.containersize())
-      b.touch()
+      // b.touch()
       active.unshift(b)
     }
   }
