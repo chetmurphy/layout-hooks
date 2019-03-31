@@ -42,7 +42,7 @@ export interface IDragDropProps extends React.HTMLProps<HTMLDivElement>{
 
 export class DragDrop extends React.Component<IDragDropProps> {
 
-  private _block: Block | undefined;
+  private _block: React.MutableRefObject<Block> | undefined;
 
   static propTypes = {
     name: PropTypes.string.isRequired,
@@ -62,13 +62,13 @@ export class DragDrop extends React.Component<IDragDropProps> {
     this._block = this.props.g.blocks().get(this.props.name)
 
     if (this._block) {
-      this._block.setData('drop', this.props.drop)
-      this._block.setData('canDrop', this.props.canDrop)
-      this._block.setData('endDrop', this.props.endDrop)
-      this.props.dragData && this._block.setData('dragData', this.props.dragData)
-      this.props.dragImage && this._block.setData('dragImage', this.props.dragImage)
-      this.props.dragEnter && this._block.setData('dragEnter', this.props.dragEnter)
-      this.props.dragLeave && this._block.setData('dragLeave', this.props.dragLeave)
+      this._block.current.setData('drop', this.props.drop)
+      this._block.current.setData('canDrop', this.props.canDrop)
+      this._block.current.setData('endDrop', this.props.endDrop)
+      this.props.dragData && this._block.current.setData('dragData', this.props.dragData)
+      this.props.dragImage && this._block.current.setData('dragImage', this.props.dragImage)
+      this.props.dragEnter && this._block.current.setData('dragEnter', this.props.dragEnter)
+      this.props.dragLeave && this._block.current.setData('dragLeave', this.props.dragLeave)
     } else {
       throw new Error(
 `DragDrop: no block found for ${this.props.name} in Layout ${this.props.g.name()}. 

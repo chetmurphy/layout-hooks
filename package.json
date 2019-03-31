@@ -71,9 +71,7 @@
   },
   "jest": {
     "verbose": true,
-    "setupFiles": [
-      "<rootDir>/testSetup.js"
-    ],
+    
     "transform": {
       ".(ts|tsx)$": "ts-jest",
       ".(css)$": "<rootDir>/node_modules/jest-css-modules-transform"
@@ -81,7 +79,6 @@
     "moduleNameMapper": {
       "\\.(css)$": "<rootDir>/src/assets/css/__mocks__/styleMock.js"
     },
-    "testEnvironment": "node",
     "testURL": "http://localhost/",
     "testRegex": "(src/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
     "moduleFileExtensions": [

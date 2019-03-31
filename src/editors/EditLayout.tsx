@@ -75,7 +75,7 @@ export class EditLayout
 
     this._handle = { x: 0, y: 0, width: 0, height: 0 }
     if (this.props.edit.updateHandle) {
-      const r = props.block.rect
+      const r = props.block.current.rect
       this._handle = this.props.edit.updateHandle(r)
     }
   }
@@ -84,7 +84,7 @@ export class EditLayout
     if (this._handle) {
       return (
         <div
-          id={this.props.block.name}
+          id={this.props.block.current.name}
           style={editStyle({
             cursor: this.props.edit.cursor!,
             handle: this._handle,
@@ -103,7 +103,7 @@ export class EditLayout
 
   public initUpdate(x: number, y: number) {
     this._startOrigin = { x, y }
-    const r = this.props.block.rect
+    const r = this.props.block.current.rect
     this._handle = this.props.edit.updateHandle!(r)
     this._startRect = clone(this.props.handle)
   }
@@ -151,12 +151,12 @@ export class EditLayout
       // 3 Make live
 
       RLGDebug(DebugLevels.trace)(
-        `EditLayout update location ${this.props.block.name} (x: ${r.x}, y: ${
+        `EditLayout update location ${this.props.block.current.name} (x: ${r.x}, y: ${
           r.y
         }) to (x: ${ur.x} y: ${ur.y})`
       )
       
-      this.props.block.update(
+      this.props.block.current.update(
         { x: ur.x, y: ur.y, width: ur.width, height: ur.height }
       )
 
@@ -168,7 +168,7 @@ export class EditLayout
           this.props.block
         )
         if (p) {
-          this.props.block.generator.params().set(p.name, p.value)
+          this.props.block.current.generator.params().set(p.name, p.value)
         }
       }
 
@@ -235,7 +235,7 @@ export class EditLayout
 
   public onClick = (event: React.MouseEvent) => {
     if (event.altKey) {
-      const fn = this.props.block.onClick
+      const fn = this.props.block.current.onClick
       if (fn) {
         fn(event)
       }
@@ -260,8 +260,8 @@ export class EditLayout
         event.stopPropagation()
         if (this.props.select) {
           let select: boolean | undefined = true
-          if (this.props.block.editor) {
-            const editor = this.props.block.editor
+          if (this.props.block.current.editor) {
+            const editor = this.props.block.current.editor
             select = editor.selectable
             if (select === undefined) {
               select = true
@@ -269,7 +269,7 @@ export class EditLayout
           }
           if (select) {
             const alreadySelected = this.props.select.selected(
-              this.props.block.name
+              this.props.block.current.name
             )
             if (alreadySelected) {
               this.props.select.remove(this.props.block)
@@ -281,7 +281,7 @@ export class EditLayout
           }
         }
       } else if (event.altKey) {
-        const fn = this.props.block.onClick
+        const fn = this.props.block.current.onClick
         if (fn) {
           fn(event)
         }
@@ -343,8 +343,8 @@ export class EditLayout
         this.setState({ contextMenu: false })
       } else {
         const block = this.props.block
-        const r = block.rect
-        block.update({ x: r.x, y: r.y, width: r.width, height: r.height })
+        const r = block.current.rect
+        block.current.update({ x: r.x, y: r.y, width: r.width, height: r.height })
       }
       this.props.onUpdate(true)
     }

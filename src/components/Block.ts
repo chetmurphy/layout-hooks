@@ -4,16 +4,19 @@ import {
   IDataLayout,
   IBlockRect,
   PositionChildrenFn,
-  IAlign
+  IAlign,
+  IEditor
 } from './blockTypes'
 import {
   convertExRect,
   layout,
+  inverseLayout,
   toOrigin,
   toAlign,
-  fromAlign
+  fromAlign,
+  connectPoint
 } from './blockUtils'
-import { IRect } from '../types'
+import { IRect, IPoint } from '../types'
 import { IGenerator } from 'generators/Generator'
 
 const deepEqual = require('deep-equal')
@@ -41,11 +44,14 @@ export abstract class Block {
   localParent: React.MutableRefObject<Block> | undefined
   align: IAlign | undefined
 
+  editor: IEditor  | undefined
+
   onClick: (e: React.MouseEvent) => void
   onMouseDown: (e: React.MouseEvent) => void
+  abstract update(r: IRect)
   abstract updatePosition(data: IDataLayout)
   abstract setData(key: string, v: any)
-  abstract getData(key: string, i: any)
+  abstract getData(key: string, i?: any)
 }
 
 /**
@@ -82,9 +88,19 @@ export function BlockFactory(
 
   const bounds = { container: g.containersize(), viewport: g.viewport() }
 
-  const blockRect = React.useMemo(() => {
-    return convertExRect(data.location)
-  }, [data.location])
+  const blockRect = React.useRef<IBlockRect>({})
+  React.useEffect(() => {
+    blockRect.current = convertExRect(data.location)
+    // console.log(`blockRect ${data.location.left}`)
+  }, [
+    convertExRect, 
+    data.location.left, 
+    data.location.top, 
+    data.location.right, 
+    data.location.bottom, 
+    data.location.width, 
+    data.location.height
+  ])
 
   const [rect, setRect] = React.useState({ x: 0, y: 0, width: 0, height: 0 })
 
@@ -107,7 +123,7 @@ export function BlockFactory(
   function noop(e: React.MouseEvent<Element, MouseEvent>) {}
 
   React.useEffect(() => {
-    let r = layout(blockRect, bounds)
+    let r = layout(blockRect.current, bounds)
 
     if (data.align) {
       const ref = getRef()
@@ -141,9 +157,11 @@ export function BlockFactory(
     }
 
     if (!deepEqual(r, rect)) {
+      // console.log(`setRect ${r.x}`)
       setRect(r)
     }
   }, [
+    blockRect,
     data.location,
     data.align,
     data.origin,
@@ -164,7 +182,13 @@ export function BlockFactory(
       return rect
     }
 
+  /**
+   * sets the position and size using a [rect](../interfaces/irect.html) for the block in pixels.
+   * @params r
+   * The value of the [rect](../interfaces/irect.html).
+   */
     set rect(r: IRect) {
+      this.update(r)
       setRect(r)
     }
 
@@ -194,6 +218,10 @@ export function BlockFactory(
 
     get zIndex(): number {
       return _zIndex.current
+    }
+
+    get editor(): IEditor | undefined {
+      return undefined
     }
 
     set zIndex(v: number) {
@@ -251,6 +279,41 @@ export function BlockFactory(
 
     public setData(key: string, v: any) {
       return _data.current.set(key, v)
+    }
+
+    public update(r: IRect) {
+      // Takes in world coordinates
+    
+      if (data.align && getRef()) {
+        const align = data.align
+        // Get source and self points
+        const ref = getRef()
+        if (ref) {
+          const r1 = ref!.rect
+          const p1 = connectPoint(r1, data.align.source)
+    
+          // Use updated r
+          const p2 = connectPoint(r, align.self)
+    
+          // Compute new offset
+          const offset: IPoint = {
+            x: p2.x - p1.x,
+            y: p2.y - p1.y
+          }
+    
+          // Update align offset
+          align.offset = offset
+        }
+      } else {
+        const _r = toOrigin(r, data.origin)
+    
+        const containersize = g.containersize()
+        const viewport = g.viewport()
+        blockRect.current = inverseLayout(_r,  blockRect.current, {
+          container: containersize,
+          viewport: viewport
+        })
+      }
     }
 
     public updatePosition(data: IDataLayout) {}

@@ -12,7 +12,7 @@ export interface IDraggableProps extends React.HTMLProps<HTMLDivElement> {
 }
 
 export class Draggable extends React.Component<IDraggableProps> {
-  private _block: Block
+  private _block: React.MutableRefObject<Block>
 
   static propTypes = {
     name: PropTypes.string.isRequired,
@@ -25,12 +25,13 @@ export class Draggable extends React.Component<IDraggableProps> {
 
   componentDidMount() {
     const p: IDataLayout = {
+      name: `${this.props.name}`,
       location: { left: 0, top: 0, width: 0, height: 0 }
     }
     this._block = this.props.g
       .blocks()
-      .set(`${this.props.name}`, p, this.props.g)
-    this._block.setData('dragImage', this.dragImage)
+      .set(p, this.props.g)
+    this._block.current.setData('dragImage', this.dragImage)
   }
 
   render() {

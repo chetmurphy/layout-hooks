@@ -89,7 +89,7 @@ class Command implements ICommand {
 export class Select extends React.Component<ISelectProps, ISelectState> {
 
   private _editHelper: EditHelper | undefined;
-  private _selected: Map<string, Block> = new Map([]);
+  private _selected: Map<string,  React.MutableRefObject<Block>> = new Map([]);
   private _undo: IUndoRedo[] = [];
   private _redo: IUndoRedo[] = [];
 
@@ -193,22 +193,22 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
     data.forEach((saved: ISavedPosition) => {
       const block = blocks.get(saved.name);
       if (block) {
-        oldData.push({name: saved.name, value: clone(block.rect)});
+        oldData.push({name: saved.name, value: clone(block.current.rect)});
         const r = saved.value;
-        block.update({ x: r.x, y: r.y, width: r.width, height: r.height });
-        this._selected.set(block.name, block);
+        block.current.update({ x: r.x, y: r.y, width: r.width, height: r.height });
+        this._selected.set(block.current.name, block);
       }
     });
     this.props.onUpdate();
     return oldData;
   }
 
-  public add(block: Block) {
-    this._selected.set(block.name, block);
+  public add(block: React.MutableRefObject<Block>) {
+    this._selected.set(block.current.name, block);
   }
 
-  public remove(block: Block) {
-    this._selected.delete(block.name);
+  public remove(block: React.MutableRefObject<Block>) {
+    this._selected.delete(block.current.name);
   }
 
   public clear() {
@@ -221,9 +221,9 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
   public pushRectState = () => {
     const data: IUndoRedo = []
-    this._selected.forEach((block: Block) => {
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
       // save a clone of block.rect
-      data.push({ name: block.name, value: clone(block.rect) });
+      data.push({ name: block.current.name, value: clone(block.current.rect) });
     })
     this._undo.push(data);
   }
@@ -233,12 +233,12 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
     this.pushRectState();
 
-    this._selected.forEach((block: Block) => {
-      const r = block.rect;
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
+      const r = block.current.rect;
       if (center === undefined) {
         center = r.x + .5 * r.width;
       } else {
-        block.update({ x: center - r.width / 2, y: r.y, width: r.width, height: r.height })
+        block.current.update({ x: center - r.width / 2, y: r.y, width: r.width, height: r.height })
       }
     });
     if (this._selected.size) {
@@ -251,12 +251,12 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
     this.pushRectState();
 
-    this._selected.forEach((block: Block) => {
-      const r = block.rect;
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
+      const r = block.current.rect;
       if (middle === undefined) {
         middle = r.y + .5 * r.height;
       } else {
-        block.update({ x: r.x, y: middle - r.height / 2, width: r.width, height: r.height })
+        block.current.update({ x: r.x, y: middle - r.height / 2, width: r.width, height: r.height })
       }
     });
     if (this._selected.size) {
@@ -269,12 +269,12 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
     this.pushRectState();
 
-    this._selected.forEach((block: Block) => {
-      const r = block.rect;
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
+      const r = block.current.rect;
       if (top === undefined) {
         top = r.y;
       }
-      block.update({ x: r.x, y: top, width: r.width, height: r.height })
+      block.current.update({ x: r.x, y: top, width: r.width, height: r.height })
     });
     if (this._selected.size) {
       this.props.onUpdate();
@@ -286,12 +286,12 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
     this.pushRectState();
 
-    this._selected.forEach((block: Block) => {
-      const r = block.rect;
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
+      const r = block.current.rect;
       if (left === undefined) {
         left = r.x;
       }
-      block.update({ x: left, y: r.y, width: r.width, height: r.height })
+      block.current.update({ x: left, y: r.y, width: r.width, height: r.height })
     });
     if (this._selected.size) {
       this.props.onUpdate();
@@ -303,12 +303,12 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
     this.pushRectState();
 
-    this._selected.forEach((block: Block) => {
-      const r = block.rect;
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
+      const r = block.current.rect;
       if (bottom === undefined) {
         bottom = r.y + r.height;
       }
-      block.update({ x: r.x, y: bottom - r.height, width: r.width, height: r.height })
+      block.current.update({ x: r.x, y: bottom - r.height, width: r.width, height: r.height })
     });
     if (this._selected.size) {
       this.props.onUpdate();
@@ -320,12 +320,12 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
 
     this.pushRectState();
 
-    this._selected.forEach((block: Block) => {
-      const r = block.rect;
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
+      const r = block.current.rect;
       if (right === undefined) {
         right = r.x + r.width;
       }
-      block.update({ x: right - r.width, y: r.y, width: r.width, height: r.height })
+      block.current.update({ x: right - r.width, y: r.y, width: r.width, height: r.height })
     });
     if (this._selected.size) {
       this.props.onUpdate();
@@ -335,7 +335,7 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
   public bringForward = () => {
     const stacking = this.props.g.stacking();
 
-    this._selected.forEach((block: Block) => {
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
       stacking.bringForward(block)
     });
     if (this._selected.size) {
@@ -346,7 +346,7 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
   public sendBackward = () => {
     const stacking = this.props.g.stacking();
 
-    this._selected.forEach((block: Block) => {
+    this._selected.forEach((block: React.MutableRefObject<Block>) => {
       stacking.sendBackward(block)
     });
     if (this._selected.size) {
@@ -391,7 +391,7 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
   }
 
   private selectedBlocks() {
-    const b: Block[] = []
+    const b: React.MutableRefObject<Block>[] = []
     this._selected.forEach((value) => {
       b.push(value)
     })
@@ -402,7 +402,7 @@ export class Select extends React.Component<ISelectProps, ISelectState> {
   //   let min = Number.MAX_SAFE_INTEGER
   //   let max = Number.MIN_SAFE_INTEGER
 
-  //   this.props.g.blocks().map.forEach((block: Block) => {
+  //   this.props.g.blocks().map.forEach((block: React.MutableRefObject<Block>) => {
   //     if (block.layer < min) {
   //       min = block.layer
   //     }

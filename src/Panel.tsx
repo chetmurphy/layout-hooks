@@ -8,7 +8,7 @@ const deepEqual = require('deep-equal')
 
 export interface IMetaDataArgs {
   container: IRect;
-  block: Block;
+  block: React.MutableRefObject<Block>;
   service: ServiceOptions;
   g: IGenerator;
   context: Map<string, any>;
@@ -18,7 +18,7 @@ export interface IMetaDataArgs {
 // props must be optional to allow them to be injected
 interface IPanelProps extends React.HTMLProps<HTMLDivElement> {
   container?: IRect;
-  block?: Block;
+  block?: React.MutableRefObject<Block>;
   service?: ServiceOptions;
   g?: IGenerator;
   context?: Map<string, any>;

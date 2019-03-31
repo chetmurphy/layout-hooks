@@ -17,12 +17,12 @@ export class Stacking {
     this._blocks = args.blocks
   }
 
-  public bringForward(block: Block) {
-    const current = block.zIndex
+  public bringForward(block: React.MutableRefObject<Block>) {
+    const current = block.current.zIndex
     let currentFront = Number.MAX_SAFE_INTEGER
     let max = Number.MIN_SAFE_INTEGER
 
-    block.generator
+    block.current.generator
       .blocks()
       .map.forEach((block: React.MutableRefObject<Block>) => {
         if (block.current.zIndex > current) {
@@ -37,11 +37,11 @@ export class Stacking {
       currentFront < Number.MAX_SAFE_INTEGER
         ? currentFront + 1
         : max === Number.MIN_SAFE_INTEGER
-        ? block.zIndex
+        ? block.current.zIndex
         : max + 1
 
-    this._params.set(`${block.name}ZIndex`, value)
-    block.zIndex = value
+    this._params.set(`${block.current.name}ZIndex`, value)
+    block.current.zIndex = value
 
     return value
   }
@@ -59,12 +59,12 @@ export class Stacking {
     }
   }
 
-  public sendBackward(block: Block) {
-    const current = block.zIndex
+  public sendBackward(block: React.MutableRefObject<Block>) {
+    const current = block.current.zIndex
     let currentBack = Number.MIN_SAFE_INTEGER
     let min = Number.MAX_SAFE_INTEGER
 
-    block.generator
+    block.current.generator
       .blocks()
       .map.forEach((block: React.MutableRefObject<Block>) => {
         if (block.current.zIndex < current) {
@@ -79,11 +79,11 @@ export class Stacking {
       currentBack > Number.MIN_SAFE_INTEGER
         ? currentBack - 1
         : min === Number.MAX_SAFE_INTEGER
-        ? block.zIndex
+        ? block.current.zIndex
         : Math.max(0, min - 1)
 
-    this._params.set(`${block.name}ZIndex`, value)
-    block.zIndex = value
+    this._params.set(`${block.current.name}ZIndex`, value)
+    block.current.zIndex = value
 
     return value
   }

@@ -1,9 +1,10 @@
 import * as React from 'react'
-import { DebugLevels, ILayoutState, ILayoutProps } from 'types'
+
+import { DebugLevels, ILayoutState, ILayoutProps } from './types'
 
 import RLGDebug from 'debug'
 
-import { Block } from 'components/Block';
+import { Block } from './components/Block';
 
 export function useLayoutEventHandlers(
   props: ILayoutProps,

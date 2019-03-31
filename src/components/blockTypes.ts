@@ -225,7 +225,7 @@ export interface IAlign {
  * is used in the solitaire game to distribute up to 3 cards in the 'waste'.
  *
  * ```ts
- * function positionWasteChildren(block: Block, g: Generator, index: number) {
+ * function positionWasteChildren(block: React.MutableRefObject<Block>, g: Generator, index: number) {
  *  // Return a Block relative to parent block starting at position at (0, 0)
  *
  *  const cardSize = g.params().get('cardSize') as ISize;
@@ -243,7 +243,7 @@ export interface IAlign {
  * ```
  */
 export type PositionChildrenFn = (
-  block: Block,
+  block: React.MutableRefObject<Block>,
   g: IGenerator,
   index: number,
   props: IGenericProps
@@ -324,7 +324,7 @@ export type Transform = IRotate | IScale | ISkew
  *
  * public bringForward = () => {
  *    const stacking = this.props.g.stacking();
- *    this._selected.forEach((block: Block) => {
+ *    this._selected.forEach((block: React.MutableRefObject<Block>) => {
  *      stacking.bringForward(block)
  *    });
  *    if (this._selected.size) {

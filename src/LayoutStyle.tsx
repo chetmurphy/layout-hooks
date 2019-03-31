@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { ILayoutProps, ILayoutState, OverflowOptions, IRect } from "types";
+import { ILayoutProps, ILayoutState, OverflowOptions, IRect } from './types'
 
 const prefix = require('react-prefixer')
 

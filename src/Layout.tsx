@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { DebugLevels, ILayoutProps, ILayoutState, ServiceOptions } from 'types'
-import { IGenerator } from 'generators/Generator'
+import { DebugLevels, ILayoutProps, ILayoutState, ServiceOptions } from './types'
+import { IGenerator } from './generators/Generator'
 
 import RLGDebug from 'debug'
 
 import { content } from './LayoutUtils'
-import { mainStyle } from 'LayoutStyle';
-import { useLayoutEventHandlers } from 'LayoutEvents';
+import { mainStyle } from './LayoutStyle';
+import { useLayoutEventHandlers } from './LayoutEvents';
 
 function initLayout(g: IGenerator) {
   g.reset()

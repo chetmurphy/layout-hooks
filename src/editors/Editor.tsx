@@ -27,7 +27,7 @@ export interface IEditor {
  */
 export interface IEditorProps extends React.HTMLProps<HTMLDivElement> {
   key: string;
-  block: Block;
+  block: React.MutableRefObject<Block>;
   boundary: IRect;
   edit: IEdit;
   editor?: EditorOptions;

@@ -42,9 +42,9 @@ export class DragDropService
   // private _rbush: any
   private _root: React.RefObject<HTMLDivElement>
   private _dragData: string[] = []
-  private _prevDroppable: Set<Block> = new Set()
-  private _dragBlock: Block | undefined = undefined
-  private _parentContainer: Block | undefined
+  private _prevDroppable: Set<React.MutableRefObject<Block>> = new Set()
+  private _dragBlock: React.MutableRefObject<Block> | undefined = undefined
+  private _parentContainer: React.MutableRefObject<Block> | undefined
 
   constructor(props: IServiceProps) {
     super(props)
@@ -64,16 +64,16 @@ export class DragDropService
 
   protected hitTest(r: Rect) {
     const blocks = this.props.g.blocks()
-    const items: Block[] = []
+    const items: React.MutableRefObject<Block>[] = []
     // this._rbush.clear()
-    const dragBlockParent = this._dragBlock!.localParent
+    const dragBlockParent = this._dragBlock!.current.localParent
     if (dragBlockParent) {
       blocks.map.forEach(block => {
         if (
-          block.getData('canDrop') &&
-          dragBlockParent.name !== block.name
+          block.current.getData('canDrop') &&
+          dragBlockParent.current.name !== block.current.name
         ) {
-            if (r.intersect(block.rect)) {
+            if (r.intersect(block.current.rect)) {
               items.push(block)
             }
         }
@@ -163,7 +163,7 @@ export class DragDropService
     }
 
     // Get target and corresponding Block
-    let block: Block | undefined = undefined
+    let block: React.MutableRefObject<Block> | undefined = undefined
     if (this._root && this._root.current) {
       
       // Hide this layer so that we can use elementFromPoint
@@ -184,7 +184,7 @@ export class DragDropService
 
           // Find parent block - get it now because it will change during the
           // DnD process. It is needed for endDrag.
-          this._parentContainer = block.localParent
+          this._parentContainer = block.current.localParent
           this._dragBlock = block
         }
       }
@@ -206,9 +206,9 @@ export class DragDropService
 
     // get dragData
     if (this._parentContainer) {
-      const dragData = this._parentContainer.getData('dragData')
+      const dragData = this._parentContainer.current.getData('dragData')
       if (dragData) {
-        this._dragData = dragData(block.name)
+        this._dragData = dragData(block.current.name)
         if (!this._dragData) {
           return
         }
@@ -216,18 +216,18 @@ export class DragDropService
     }
 
     if (this._dragData ? this._dragData.length === 0 : true) {
-      this._dragData = [block.name]
+      this._dragData = [block.current.name]
     }
 
     // get drag image as JSX
     if (this._parentContainer) {
-      const dragImage = this._parentContainer.getData('dragImage')
+      const dragImage = this._parentContainer.current.getData('dragImage')
       if (dragImage) {
         this._jsx = dragImage(this._dragData)
       }
     }
 
-    const dragImage = block.getData('dragImage')
+    const dragImage = block.current.getData('dragImage')
     if (this._jsx === undefined && dragImage) {
       this._jsx = dragImage(this._dragData)
     }
@@ -254,10 +254,10 @@ export class DragDropService
     const id = event && event.target && event.target['id']
     RLGDebug(DebugLevels.mouseEvents)(`DragDrop onHtmlMouseUp ${id ? id : ''}`)
 
-    function dump(candidates: Block[]) {
+    function dump(candidates: React.MutableRefObject<Block>[]) {
       RLGDebug(DebugLevels.trace)(`candidates.length ${candidates.length}`)
       candidates.forEach((b) => {
-        RLGDebug(DebugLevels.trace)(`   block ${b.name}`)
+        RLGDebug(DebugLevels.trace)(`   block ${b.current.name}`)
       })
     }
 
@@ -276,22 +276,22 @@ export class DragDropService
         RLGDebug(DebugLevels.trace)(dump(candidates))
 
         if (candidates.length === 1) {
-          const canDrop = candidates[0].getData('canDrop')
+          const canDrop = candidates[0].current.getData('canDrop')
           if (canDrop && canDrop(this._dragData)) {
-            const drop = candidates[0].getData('drop')
+            const drop = candidates[0].current.getData('drop')
             if (drop && drop(this._dragData)) {
               if (this._parentContainer) {
-                const endDrop = this._parentContainer.getData('endDrop')
+                const endDrop = this._parentContainer.current.getData('endDrop')
                 if (endDrop) {
                   endDrop(this._dragData)
                 } else {
                   console.error(
-                    `Drag container for ${this._dragBlock.name} does not have a endDrag handler`
+                    `Drag container for ${this._dragBlock.current.name} does not have a endDrag handler`
                   )
                 }
               } else {
                 console.error(
-                  `Drag container for ${this._dragBlock.name} does not exist. You can only drag
+                  `Drag container for ${this._dragBlock.current.name} does not exist. You can only drag
                   elements that are in an enabled container element.`
                 )
               }
@@ -325,9 +325,9 @@ export class DragDropService
     //   maxY: r.bottom
     // })
 
-    const verified: Block[] = []
-    candidates.forEach((b: Block) => {
-      if (r.intersect(b.rect)) {
+    const verified: React.MutableRefObject<Block>[] = []
+    candidates.forEach((b: React.MutableRefObject<Block>) => {
+      if (r.intersect(b.current.rect)) {
         verified.push(b)
       }
     })
@@ -381,14 +381,14 @@ export class DragDropService
 
       if (RLGDebug(DebugLevels.trace).enabled) {
         RLGDebug(DebugLevels.trace)(`Drop target containers for ${this.props.name}`)
-          candidates.forEach((block: Block) => {
-            RLGDebug(DebugLevels.trace)(`  drop target ${block.name}`)
+          candidates.forEach((block: React.MutableRefObject<Block>) => {
+            RLGDebug(DebugLevels.trace)(`  drop target ${block.current.name}`)
         })
       }
     
-      const blocks: Set<Block> = new Set()
-      candidates.forEach((block: Block) => {
-        const canDrop = block.getData('canDrop')
+      const blocks: Set<React.MutableRefObject<Block>> = new Set()
+      candidates.forEach((block: React.MutableRefObject<Block>) => {
+        const canDrop = block.current.getData('canDrop')
         if (canDrop && canDrop(this._dragData)) {
           blocks.add(block)
         }
@@ -397,7 +397,7 @@ export class DragDropService
       let leave = difference(this._prevDroppable, blocks)
 
       leave.forEach(b => {
-        const dragLeave = b.getData('dragLeave')
+        const dragLeave = b.current.getData('dragLeave')
         if (dragLeave) {
           dragLeave()
         }
@@ -406,7 +406,7 @@ export class DragDropService
       let enter = difference(blocks, this._prevDroppable)
 
       enter.forEach(b => {
-        const dragEnter = b.getData('dragEnter')
+        const dragEnter = b.current.getData('dragEnter')
         if (dragEnter) {
           dragEnter()
         }

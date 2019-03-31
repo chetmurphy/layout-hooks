@@ -10,14 +10,15 @@ import {
   ISize,
   rectSize,
   IRect
-} from 'types'
+} from './types'
 
 import RLGDebug from 'debug'
-import { IDataLayout } from 'layout-hooks'
-import { IMetaDataArgs } from 'Panel'
-import { Block } from 'components/Block';
-import { blockStyle, blockSelectedStyle } from 'LayoutStyle'
-import { useLayoutEventHandlers } from 'LayoutEvents';
+
+import { IDataLayout } from './components/blockTypes'
+import { IMetaDataArgs } from './Panel'
+import { Block } from './components/Block';
+import { blockStyle, blockSelectedStyle } from './LayoutStyle'
+import { useLayoutEventHandlers } from './LayoutEvents';
 
 export function content(
   props: ILayoutProps,
@@ -189,7 +190,6 @@ export function content(
   }
 
   return elements
-
   
   function createLayout(
     child: JSX.Element,
@@ -367,7 +367,7 @@ export function content(
             : {}
           const metaDataArgs: IMetaDataArgs = {
             container: rect,
-            block: b.current,
+            block: b,
             service: props.service ? props.service : ServiceOptions.none,
             g: props.g,
             context: gContext.current
@@ -469,7 +469,7 @@ export function content(
       child.props.children,
       (nestedChild, i) => {
         const nestedLayout = b.current.positionChildren!(
-          b.current,
+          b,
           b.current.generator,
           i,
           nestedChild.props
