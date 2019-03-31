@@ -1,0 +1,14 @@
+{
+  "rlg.intro": [
+     ["containersize", {"width":1434,"height":714}],
+     ["animationStart", 0],
+     ["animationTime", 0],
+     ["animationLast", 0],
+     ["velocity", {"x": 0,"y": 0.1}],
+     ["update", 0],
+     ["frameHeight", 3917.1],
+     ["deltaTime", 16.73699999999735],
+     ["animate", 1]
+  ]
+
+}
