@@ -22,4 +22,5 @@
     "unmanaged",
     "vmin"
   ],
+  "git.ignoreLimitWarning": true,
 }
