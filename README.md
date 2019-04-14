@@ -4,6 +4,8 @@
 
 This project is a rewrite of [react-layout-generators](https://github.com/chetmurphy/react-layout-generator) using React Hooks. It is not yet functional but a work in progress.
 
+*Restarting --- ignore the following*
+
 The first question I faced was how can I convert a complex class based component to use Hooks? Is it all or nothing? The approach outlined below looks promising. It should allow one class at a time to be converted and then integrated at least at the syntax level (there will likely be behavior difference that will need to be addressed).
 
 I also expect that refactoring options will become clear by doing this conversion so it will likely not be a one for one conversion.
